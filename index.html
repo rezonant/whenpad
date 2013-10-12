@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Clockr</title>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	<link type="text/css" rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<div id="app">
+		<div id="logo">
+			<h1>whenpad</h1>
+		</div>
+		
+		<div id="tabs">
+			<div class="buttons">
+				<button class="now">Now</button>
+				<span class="days">
+				</span>
+			</div>
+			
+			<div style="clear:right;"></div>
+			
+			<fieldset class="now tab">
+				<div class="main-panel">
+					
+					<button class="short start" title="Start or resume the timer">Start</button>
+					<button class="short finish" disabled="disabled" title="Save the current time entry">Save</button>
+					
+					<div class="inactive" id="clock">
+						<span class="hour">00</span> : <span class="minute">00</span> : <span class="second">00</span> 
+					</div>
+					
+					<br/>
+					
+					<div style="text-align:right;">
+						Adjust: <input type="text" class="add-time" value="00:00:00" style="width:5.1em;" />
+						<button class="modify short">Go</button>
+					</div>
+					
+					<br/>
+
+					<fieldset class="sidebar">
+						<label>Statistics</label><br/>
+						<label class="columnar">Total: </label><span class="total-time">00:00:00</span><br/>
+						<label class="columnar" style="text-align:right;">+ new = &nbsp;</label><span class="total-time-plus">00:00:00</span>
+						<br/>
+						<br/>
+						<div class="stats">
+
+						</div>
+					</fieldset>
+				</div>
+				<div>
+					<label>&#9660; Note:</label>
+					<div style="display:inline-block;margin-left:4em;">
+						Focus:
+						<span class="new-tag" style="display:none;font-weight:bold;font-size:100%;min-width:50em;" contenteditable="true">unlabeled</span>
+						<select style="width:6em;position:relative;top:-3px;" class="auto-tag">
+						</select>
+					</div>
+					
+					<div class="notebox">
+						<textarea class="note" placeholder="Describe what you are doing."></textarea>
+					</div>
+				</div>
+				
+				<fieldset class="nonsidebar">
+					<label>Statistics</label><br/>
+					<label class="columnar">Total: </label><span class="total-time">00:00:00</span><br/>
+					<label class="columnar" style="text-align:right;">+ new = &nbsp;</label><span class="total-time-plus">00:00:00</span>
+					<br/>
+					<br/>
+					<div class="stats">
+
+					</div>
+				</fieldset>
+			</fieldset>
+			<div class="days">
+			</div>
+		</div>
+	</div>
+	
+	<div id="templates" class="templates">
+		<fieldset class="time-entry-list-view">
+			<div>
+				<div style="float:right">
+					<button class="merge">Merge</button>
+					<button class="export">Export</button>
+				</div>
+				<h2>Time Entries</h2>
+			</div>
+			<div class="time-entries">
+				<em class="empty">No entries have been added yet.</em>
+			</div>
+			
+		</fieldset>
+		
+		<div class="export-box lightbox">
+			<p>Here is your exported time entries in JSON format.</p>
+			
+			<textarea class="export" style="width:100%;height:10em;"></textarea>
+			<br/>
+			<br/>
+			<button class="big close">Close</button>
+		</div>
+		<div class="time-entry">
+			<div style="position:absolute;right:0.6em;top:0.6em;">
+				<a href="javascript:;" class="select special" style="position:relative;top:-2px;">&#9634;</a>
+				<a href="javascript:;" class="remove special">&#9447;</a>
+			</div>
+			
+			<div class="info">
+				<span class="display-time-spent">00:00</span>
+				
+				<br/>
+				<label class="columnar">Start time:</label> <span class="display-start-time">Fri Jan 12 3:46 PM</span><br/>
+				<label class="columnar">End time:</label> <span class="display-end-time">Fri Jan 12 3:50 PM</span><br/>
+				<label class="columnar">Tag:</label> <span class="display-tag"></span>
+			</div>
+			
+			<div>
+				<div class="display-note">
+					<em>No note to display</em>
+				</div>
+			</div>
+			
+			<input type="hidden" class="tag" name="tag[]" />
+			<input type="hidden" class="time" name="time[]" />
+			<input type="hidden" class="note" name="note[]" />
+			<input type="hidden" class="startTime" name="startTime[]" />
+			<input type="hidden" class="endTime" name="endTime[]" />
+			
+			<div style="clear:right;"></div>
+		</div>
+	</div>
+	
+	<script type="text/javascript" src="main.js"></script>
+	
+</body>
+</html>
