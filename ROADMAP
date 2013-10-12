@@ -1,16 +1,14 @@
-- Add + new = 00:12:34 under 'Total' to indicate how much time will be recorded after the current entry is saved
-  * Make a jQuery plugin for this, see below.
+
+x Add + new = 00:12:34 under 'Total' to indicate how much time will be recorded after the current entry is saved
 - Add 'Timeline' and 'Now' buttons above the Time Entries which immediately reorder your time entries to chrono or 
   reverse chrono sort order
-- Find a new name for it, as clockr is taken
-- Show each tag subtotal in a display inline block 
-  * Using above jQuery plugin, show the same + new = 00:12:34 as under 'Total' for the tag which the current post is set to
+x Find a new name for it, as clockr is taken (Whenpad)
 - reset the tag of the current post immediately upon hitting 'Finish Entry'
 - Make a new widget for the Modify WHICH ACCEPTS MOUSE SCROLL
   * Instead of saying Modify: it should actually show + or - based on whether the value is positive or negative in a nice way, so
     visually it looks like:
     [Start] [Finish] 00 : 12 : 34     + 00:00:00 [Go] 
-- Rearrange the UI.
+x Rearrange the UI.
   * Move Start and Finish to in front of the clock and relabel to 'Start' and 'Finish'. 
   * Introduce a new CSS class for the Start/Finish buttons which is half as long (or so)
   * The 'Merge' button should go down under Tags, along with the new 'Timeline' and 'Now' buttons.
