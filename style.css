@@ -16,6 +16,17 @@ p {
 	padding:1em;
 }
 
+div.footer {
+	text-align:center;
+	color: white;
+	margin-top:2em;
+	font-size:75%;
+}
+
+div.footer a {
+	color: white;
+}
+
 #tabs .buttons button {
 	background:transparent;
 	color:white;
