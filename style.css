@@ -4,6 +4,18 @@ body {
 	background: rgb(66, 117, 182);
 }
 
+p {
+	font-size: 12pt;
+}
+
+.aboutSection {
+	display:inline-block;
+	max-width:30em;
+	text-align:left;
+	vertical-align:top;
+	padding:1em;
+}
+
 #tabs .buttons button {
 	background:transparent;
 	color:white;

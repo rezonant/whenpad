@@ -1,5 +1,13 @@
+/**
+ * whenpad (C) 2013 William Lahti.
+ * License: MIT License
+ * 
+ */
+
 !function() {
+	var WHENPAD_VERSION = "0.1";
 	
+	var $app = null;
 	var timeBuffer = 0;
 	var clockUpdater = null;
 	var start = 0;
@@ -12,14 +20,16 @@
 			return ('0').repeat(size - num.toString().length) + num;
 	}
 	
-	String.prototype.repeat = function(count) { 
-		return new Array (count + 1).join(this);
-	};
-	
-	Number.prototype.zeroPad = function(size) { return zeroPad(this, size); };
+	function installMonkeyPatches() {
+		String.prototype.repeat = function(count) { 
+			return new Array (count + 1).join(this);
+		};
+		
+		Number.prototype.zeroPad = function(size) { return zeroPad(this, size); };
 
-	Date.prototype.getDateStamp = function() {
-		return this.getFullYear()+(this.getMonth() + 1).zeroPad(2)+this.getDate().zeroPad(2);
+		Date.prototype.getDateStamp = function() {
+			return this.getFullYear()+(this.getMonth() + 1).zeroPad(2)+this.getDate().zeroPad(2);
+		}
 	}
 	
 	function usedTag(tag)
@@ -351,27 +361,150 @@
 	
 	function buildDateTab(dayLabel, dateKey)
 	{
-		var $dateTab = $('#templates > .time-entry-list-view').clone();
-		$dateTab.addClass('tab');
-		$dateTab.addClass('date-'+dateKey);
+		// Create a new time-entry-list-view from the template 
 		
+		var $dateTab = $('#templates > .time-entry-list-view').clone();
+		var $timeEntries = $dateTab.find('.time-entries');
 		var $tabButton = $('<button></button>')
 			.addClass('date-'+dateKey)
 			.html(dayLabel);
 		
-		$dateTab.find('.time-entries').sortable({
+		// Mark the new list view as being a tab, and stain it with the date key 
+		// so we can find it later.
+			
+		$dateTab.addClass('tab');
+		$dateTab.addClass('date-'+dateKey);
+		$dateTab.data('hash', 'date-'+dateKey);
+
+		//////// Behaviors and Event Handlers ////////////
+	
+		$timeEntries.sortable({
 			distance: 50,
 			stop: function() {
 				window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries($('.time-entries')));
 			}
 		});
-
-		$tabButton.click(function() {
-			$('#tabs > .tab, #tabs > .days > .tab').hide();
-			$('#tabs .buttons button').removeClass('active');
+	
+		$dateTab.find('button.export').click(function() {
+			var $div = $('<div />');
 			
-			$(this).addClass('active');
-			$dateTab.show();
+			$div.addClass('overlay');
+			
+			$div.html($('#templates .export-box').clone());
+			
+			$div.find('textarea.export').val(JSON.stringify(serializeTimeEntries($('.time-entries'))));
+			
+			$div.find('button.close').click(function() {
+				$div.remove();
+			});
+			
+			$('body').append($div);
+			
+			$div.hide().fadeIn();
+		});
+		
+		$dateTab.find('button.merge').click(function() {
+			var ids = [];
+			var serial = serializeTimeEntries($timeEntries);
+			var $sentinal = null;			
+			var $entries = $timeEntries.find('.time-entry.selected');
+
+			if ($entries.length == 0) {
+				alert('Click Merge next to each entry first, then click the top Merge button to combine them.');
+				return;
+			}
+
+			// Go through the selected entries
+			// - Select the first $entry as $sentinel, will be replaced later with the new entry.
+			// - All the non-sentinals will be detached. 
+			// - Get the [data-id] from each one into the ids array.
+			
+			$entries.each(function() {
+				ids.push($(this).attr('data-id'));
+				if ($sentinal == null) 
+					$sentinal = $(this);
+				else
+					$(this).detach();
+			});
+
+			// Create an empty entry to hold the merged data from the selected entries.
+			
+			var entry = {
+				id: Math.floor(Math.random()*10000000),
+				time: 0,
+				tag: null,
+				startTime: null,
+				endTime: null,
+				note: ''
+			};
+
+			// We will run through the time entries in the overall data, finding
+			// the IDs of the ones we are interested in and adding their data together
+			// for our new entry.
+						
+			$(serial).each(function(i,e) {
+				if (ids.indexOf(e.id) < 0)
+					return;
+
+				entry.time += parseInt(e.time);											// Add the times together
+				
+				if (entry.startTime === null || e.startTime < entry.startTime)			// Take the earliest start time.
+					entry.startTime = e.startTime;
+				
+				if (entry.endTime === null || e.endTime > entry.endTime)				// Take the latest end time.
+					entry.endTime = e.endTime;
+				
+				entry.note += "\n" + e.note;											// Just merge the notes in a dumb way,
+				
+				if (!entry.tag && e.tag != 'unlabeled')									// Pick this tag if we don't have one yet.
+				
+					entry.tag = e.tag;
+			});
+
+			// Make sure we haven't got a blank tag, and trim the leading newline from the note.
+			
+			if (!entry.tag)
+				entry.tag = 'unlabeled';
+
+			if (entry.note.length > 0)
+				entry.note = entry.note.substr(1);
+
+			// Add the time entry, and move it to where it is supposed to be.
+				
+			addTimeEntryUI(entry);
+			$sentinal.after($newEntry).detach();
+
+			// Update the data and statistics
+			
+			window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries($('.time-entries')));
+			updateStats();
+			
+			// Scroll to the new entry
+			
+			var $newEntry = $('.time-entries .time-entry[data-id='+entry.id+']');
+			$newEntry[0].scrollIntoView();
+			
+			// A cool fading effect
+			
+			var baseColor = 'rgba(250, 162, 0';
+			var opacity = 1;
+			
+			$newEntry.css('background-color', baseColor+', 1.0');
+			
+			var interval;
+			interval = setInterval(function() {
+				opacity -= 0.01;
+				$newEntry.css('background-color', baseColor+', '+opacity+')');
+				if (opacity <= 0.0001) {
+					clearInterval(interval);
+					$newEntry.css('background-color', '');
+				}
+			}, 33);
+
+		});
+	
+		$tabButton.click(function() {
+			showPrimaryTab($dateTab, $tabButton);
 		});
 			
 		// Install the new tab 
@@ -450,6 +583,24 @@
 
 	}
 	
+	function showPrimaryTab($tab, $tabButton, navigate) {
+		var $app = $('#app');
+		
+		if (typeof navigate === 'undefined')
+			navigate = true;
+		
+		if (navigate && $tab.data('hash')) {
+			window.location.hash = '#/'+$tab.data('hash');
+			return;
+		}
+		
+		$app.find('#tabs > .tab, #tabs > .days > .tab').hide();
+		$tab.show();
+		
+		$('#tabs .buttons button.active').removeClass('active');
+		$tabButton.addClass('active');
+	}
+	
 	function serializeTimeEntries($timeEntries)
 	{
 		var entries = [];
@@ -467,12 +618,21 @@
 		
 		return entries;
 	}
-	st = serializeTimeEntries;
 	
-	$(document).ready(function() {
-		var $app = $('#app');	
-		
-		updateAutoTags();
+	function loadTimeEntries() {
+		if (window.localStorage.timeEntries) {
+			var entries = JSON.parse(window.localStorage.timeEntries);
+			$(entries).each(function(i,entry) {
+				addTimeEntryUI(entry, false);
+			});
+			updateStats();
+			$('#time-entries .time-entries .time-entry').hide().slideDown(700);
+		}	
+	}
+	
+	function installAppBehaviors() {
+	
+		$('.whenpad-version').html(WHENPAD_VERSION);
 		$('select.auto-tag').change(function() {
 			var $autoTags = $(this);
 			
@@ -497,50 +657,14 @@
 			//$(this).val('');
 		});
 	
-		if (window.localStorage.timeEntries) {
-			var entries = JSON.parse(window.localStorage.timeEntries);
-			$(entries).each(function(i,entry) {
-				addTimeEntryUI(entry, false);
-			});
-			updateStats();
-			$('#time-entries .time-entries .time-entry').hide().slideDown(700);
-		}
+		$app.find('#logo').click(function() {
+			showPrimaryTab($('#tabs > .about.tab'), $(this));
+		});
 		
 		$app.find('#tabs .buttons button.now').click(function() {
-			$app.find('#tabs > .tab, #tabs > .days > .tab').hide();
-			$app.find('#tabs > .now.tab').show();
-			
-			$('#tabs .buttons button').removeClass('active');
-			$(this).addClass('active');
-			
+			showPrimaryTab($('#tabs > .now.tab'), $(this));
 		});
-		
-		$app.find('button.export').click(function() {
-			var $div = $('<div />');
 			
-//			$('#app').css('-webkit-filter', 'blur(2px)');
-//			$('#app').css('-moz-filter', 'blur(2px)');
-//			$('#app').css('-ms-filter', 'blur(2px)');
-//			$('#app').css('-o-filter', 'blur(2px)');
-			
-			$div.addClass('overlay');
-			
-			$div.html($('#templates .export-box').clone());
-			
-			$div.find('textarea.export').val(JSON.stringify(serializeTimeEntries($('.time-entries'))));
-			
-			$div.find('button.close').click(function() {
-//				$('#app').css('-webkit-filter', '');
-//				$('#app').css('-moz-filter', '');
-//				$('#app').css('-ms-filter', '');
-//				$('#app').css('-o-filter', '');
-				$div.remove();
-			});
-			
-			$('body').append($div);
-			
-			$div.hide().fadeIn();
-		});
 		
 		$app.find('button.finish').click(function() {
 			if ($('textarea.note').val() == '') {
@@ -569,83 +693,6 @@
 			startTimer();
 		});
 
-		$app.find('#time-entries button.merge').click(function() {
-			var ids = [];
-			var serial = serializeTimeEntries($('.time-entries'));
-			var $sentinal = null;			
-			var $entries = $('.time-entries .time-entry.selected');
-
-			if ($entries.length == 0) {
-				alert('Click Merge next to each entry first, then click the top Merge button to combine them.');
-				return;
-			}
-
-			$entries.each(function() {
-				ids.push($(this).attr('data-id'));
-				if ($sentinal == null) 
-					$sentinal = $(this);
-				else
-					$(this).detach();
-			});
-
-			var startTime = null;
-			var endTime = null;
-			var totalTime = 0;
-			var note = "";
-			var tag = null;
-
-			$(serial).each(function(i,e) {
-				if (ids.indexOf(e.id) < 0)
-					return;
-
-				totalTime += parseInt(e.time);
-				if (endTime === null || e.endTime > endTime)
-					endTime = e.endTime;
-				if (startTime === null || e.startTime < startTime)
-					startTime = e.startTime;
-				note += "\n" + e.note;
-				if (!tag && e.tag != 'unlabeled')
-					tag = e.tag;
-			});
-
-			if (!tag)
-				tag = 'unlabeled';
-
-			if (note.length > 0)
-				note = note.substr(1);
-
-			var entry;
-			addTimeEntryUI(entry = {
-				id: Math.floor(Math.random()*10000000),
-				time: totalTime,
-				tag: tag,
-				startTime: startTime,
-				endTime: endTime,
-				note: note
-			});
-
-			var baseColor = 'rgba(250, 162, 0';
-			var $newEntry = $('.time-entries .time-entry[data-id='+entry.id+']');
-			$newEntry.css('background-color', baseColor+', 1.0');
-			var opacity = 1;
-
-			$sentinal.after($newEntry).detach();
-			var interval;
-			interval = setInterval(function() {
-				opacity -= 0.01;
-				$newEntry.css('background-color', baseColor+', '+opacity+')');
-				if (opacity <= 0.0001) {
-					clearInterval(interval);
-					$newEntry.css('background-color', '');
-				}
-			}, 33);
-
-			$newEntry[0].scrollIntoView();
-
-			window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries($('.time-entries')));
-			updateStats();
-		});
-	
 		$app.find('button.modify').click(function() {
 			var $addTime = $('input.add-time');	
 			var value = $addTime.val().replace(/^ | $/g, '');
@@ -681,5 +728,46 @@
 				startTime = new Date();
 			}
 		});
+	}
+	
+	function hashChanged() {
+		var hash = window.location.hash;
+		
+		if (hash == '')
+			hash = '#/now';
+		
+		hash = hash.substr(1);
+		hash = hash.replace(/^\/+/, '');
+		
+		var $tab = $('#tabs fieldset.'+hash);
+		var $button = $('#tabs .buttons button.'+hash);
+		
+		if ($tab.length > 0 && $button.length > 0) {
+			showPrimaryTab($tab, $button, false);
+		} else {
+			showPrimaryTab($('#tabs > .about.tab'), $('#logo'), false);
+		}
+	}
+	
+	function installHash() {
+		$(window).bind('hashchange', hashChanged);
+		
+		if (window.location.hash == '')
+			window.location.hash = '#/now';
+		else 
+			hashChanged();
+	}
+	
+	function initializeApp() {
+		$app = $('#app');
+		installMonkeyPatches();
+		updateAutoTags();
+		loadTimeEntries();
+		installAppBehaviors();
+		installHash();
+	}
+	
+	$(document).ready(function() {
+		initializeApp();
 	});
 }();

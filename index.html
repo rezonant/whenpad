@@ -1,13 +1,22 @@
 <!DOCTYPE html>
-<html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
 <head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>whenpad</title>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
 	<link type="text/css" rel="stylesheet" href="style.css" />
 </head>
 <body>
+	<!--[if lt IE 7]>
+		<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+	<![endif]-->
 	<div id="app">
 		<div id="logo">
 			<h1>whenpad</h1>
@@ -19,10 +28,46 @@
 				<span class="days">
 				</span>
 			</div>
-			
+
 			<div style="clear:right;"></div>
 			
-			<fieldset class="now tab">
+			<fieldset class="about tab" style="display:none;text-align:left;" data-hash="about">
+				<div class="aboutSection">
+					<h2>Whenpad</h2>
+					Version: <span class="whenpad-version">Unknown</span><br/><br/>
+					
+					(C) 2013 William Lahti.<br/>
+					MIT Licensed.<br/>
+					<a href="https://github.com/rezonant/whenpad">https://github.com/rezonant/whenpad</a>
+					
+				</div>
+				<div class="aboutSection">
+					<h2>About</h2>
+					<p>Whenpad is an HTML 5 application which does nothing but track your time. It is slightly oriented toward 
+					professional uses, but could be used for any sort of time tracking purpose.</p>
+
+					<p>You can start a timer, which will count ahead until you enter a Note and click 'Save' to make a time entry 
+					out of the current timer. At this point the clock resets.</p>
+
+					<p>Whenpad is not designed for you to be its slave. If you forget to update your Whenpad, you can use the 'Alter' 
+					controls to change what the current timer reads out, and you can change the time or note associated with any 
+					previous time entry. You can even reorder them. Whenpad tracks actual start/end timestamps for each entry
+					in case you confuse yourself.</p>
+
+					<p>You can make as many time entries as you want. Whenpad makes this easy to manage by letting you associate 
+					'Tags' with your entries. Whenpad will automatically tally up the time for each of the tags which are used 
+					in your current set of time entries. You can also merge any set of time entries. Whenpad will use the earliest 
+					Start Date and the latest End Date for each entry. It will also merge all the notes of the selected time entries.</p>
+
+					<p>All your data is stored in Local Storage. You can use the 'Export' feature to export your time entries to JSON.</p>
+
+					<p>Whenpad is also set up to be useful over multiple days. Time entries are automatically separated into tabs per day.</p>
+
+					<p>You can use Whenpad from any device, as the application is fully responsive.</p>
+				</div>
+			</fieldset>
+			
+			<fieldset class="now tab" data-hash="now">
 				<div class="main-panel">
 					
 					<button class="short start" title="Start or resume the timer">Start</button>
@@ -135,7 +180,11 @@
 			<div style="clear:right;"></div>
 		</div>
 	</div>
+
 	
+    <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>	
 	<script type="text/javascript" src="main.js"></script>
 	
 </body>

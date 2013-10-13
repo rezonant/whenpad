@@ -13,6 +13,8 @@ You can make as many time entries as you want. Whenpad makes this easy to manage
 up the time for each of the tags which are used in your current set of time entries. You can also merge any set of time entries. Whenpad will use the earliest Start Date
 and the latest End Date for each entry. It will also merge all the notes of the selected time entries.
 
+All your data is stored in Local Storage. You can use the 'Export' feature to export your time entries to JSON.
+
 Whenpad is also set up to be useful over multiple days. Time entries are automatically separated into tabs per day.  
 
 You can use Whenpad from any device, as the application is fully responsive.
