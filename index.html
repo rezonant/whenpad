@@ -105,27 +105,70 @@
 					</fieldset>
 				</div>
 				<div>
-					<label>&#9660; Note:</label>
-					<div style="display:inline-block;margin-left:4em;">
-						Project:
-						<select style="width:6em;position:relative;top:-3px;" class="auto-project">
-							<option class="default" value="">none</option>
-							<option class="add" value="add">add ...</option>
-						</select>
+					<div class="taskItem">
+						<label>&#9660; Note:</label>
+						
+						<div style="display:inline-block;margin-left:4em;">
+							Project:
+							<select style="width:6em;position:relative;top:-3px;" class="auto-project new-entry-project">
+								<option class="default" value="">none</option>
+								<option class="add" value="add">add ...</option>
+							</select>
+						</div>
+						
+						<div style="display:inline-block;margin-left:4em;">
+							Task:
+							<span class="new-task" style="display:none;font-weight:bold;font-size:100%;min-width:50em;" contenteditable="true">unlabeled</span>
+							<select style="width:6em;position:relative;top:-3px;" class="auto-task new-entry-task">
+								<option class="default" value="">none</option>
+								<option class="add" value="add">add ...</option>
+							</select>
+						</div>
+						
+						<div class="notebox">
+							<textarea class="note" placeholder="Describe what you are doing."></textarea>
+						</div>
 					</div>
 					
-					<div style="display:inline-block;margin-left:4em;">
-						Task:
-						<span class="new-task" style="display:none;font-weight:bold;font-size:100%;min-width:50em;" contenteditable="true">unlabeled</span>
-						<select style="width:6em;position:relative;top:-3px;" class="auto-task">
-							<option class="default" value="">none</option>
-							<option class="add" value="add">add ...</option>
-						</select>
+					<hr/>
+					
+					<div class="taskItem">
+						<label>&#9660; Split </label>
+							the 
+							<select class="split-mode">
+								<option value="first">First</option>
+								<option value="last">Last</option>
+							</select>
+							<input type="text" value="00:00:00" class="split-time" style="width:5em;" />
+						<br/>
+						<label class="short columnar">&nbsp;</label>
+						<div style="display:inline-block;margin-left:4em;">
+							Project:
+							<select style="width:6em;position:relative;top:-3px;" class="auto-project split-entry-project">
+								<option class="default" value="">none</option>
+								<option class="add" value="add">add ...</option>
+							</select>
+						</div>
+						
+						<div style="display:inline-block;margin-left:4em;">
+							Task:
+							<span class="new-task" style="display:none;font-weight:bold;font-size:100%;min-width:50em;" contenteditable="true">unlabeled</span>
+							<select style="width:6em;position:relative;top:-3px;" class="auto-task split-entry-task">
+								<option class="default" value="">none</option>
+								<option class="add" value="add">add ...</option>
+							</select>
+						</div>
+						
 					</div>
+					
 					
 					<div class="notebox">
-						<textarea class="note" placeholder="Describe what you are doing."></textarea>
+						<textarea class="split-note" placeholder="Describe what you were doing."></textarea>
 					</div>
+					
+						<div style="float:right;">
+							<button class="split">Split</button>
+						</div>
 				</div>
 				
 				<fieldset class="nonsidebar">

@@ -113,7 +113,7 @@ div.main-panel button.short {
 		display:none;
 }
 
-textarea.note {
+textarea.note, textarea.split-note {
 	width:100%;
 	height:15em;
 }
@@ -247,7 +247,7 @@ a img {
 	}
 	
 	.notebox {
-		margin-right:0;
+		margin-left:0;
 	}
 }
 

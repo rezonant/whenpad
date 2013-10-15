@@ -45,18 +45,18 @@
 		newAutos[project] = [];
 		newAutos[project].push(task);
 		
-		$(autos).each(function(projectName,taskList) {
-			
+		for (var projectName in autos) {
+			var taskList = autos[projectName];
 			var started = false;
 			
 			$(taskList).each(function(i,e) {
 				if (projectName == project && e == task)
 					return;
 				
-				if (typeof e != 'string')
-					return;
+				//if (typeof e != 'string')
+					//return;
 				
-				if (!started) {
+				if (!started && !newAutos[projectName]) {
 					newAutos[projectName] = [];
 					started = true;
 				}
@@ -67,7 +67,7 @@
 					return false;
 			});
 			
-		});
+		}
 		
 		window.localStorage.recentTasks = JSON.stringify(newAutos);
 	}
@@ -96,27 +96,31 @@
 	
 	function updateAutoTags()
 	{
-		var autos = window.localStorage.recentProjects || '[]';
-		autos = JSON.parse(autos);
-		var $autoTags = $('select.auto-project');
-		var currentTag = $autoTags.val();
-		
-		$autoTags.find('option').not('.default').detach();
-
-		var alreadyHave = [];
-		
-		$(autos).each(function(i,val) {
-			val = val.replace(/^ | $/g, '');
-			if (alreadyHave.indexOf(val) >= 0)
-				return;
+		$('.taskItem').each(function(i,taskItem) {
+			var $taskItem = $(taskItem);
 			
-			$autoTags.append($('<option>'+val+'</option>').val(val));
-			alreadyHave.push(val);
+			var autos = window.localStorage.recentProjects || '[]';
+			autos = JSON.parse(autos);
+			var $autoTags = $taskItem.find('select.auto-project');
+			var currentTag = $autoTags.val();
+			
+			$autoTags.find('option').not('.default').detach();
+
+			var alreadyHave = [];
+			
+			$(autos).each(function(i,val) {
+				val = val.replace(/^ | $/g, '');
+				if (alreadyHave.indexOf(val) >= 0)
+					return;
+				
+				$autoTags.append($('<option>'+val+'</option>').val(val));
+				alreadyHave.push(val);
+			});
+			
+			$autoTags.append('<option class="add">add...</option>');
+			//var currentTag = $('.new-tag').text();
+			$autoTags.val(currentTag);
 		});
-		
-		$autoTags.append('<option class="add">add...</option>');
-		//var currentTag = $('.new-tag').text();
-		$autoTags.val(currentTag);
 	}
 	
 	function formatTimeSegment(value)
@@ -355,6 +359,8 @@
 				}
 				updateStats();
 				usedTag(value);
+				if ($entry.find('input.task').val())
+					usedTask(value, $entry.find('input.task').val());
 			});
 		});
 		$entry.find('.display-task').click(function() {
@@ -377,9 +383,9 @@
 				
 				if (value != initialValue) {
 					window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries());
+					updateStats();
+					usedTask($entry.find('input.tag').val(), value);
 				}
-				updateStats();
-				usedTask($entry.find('input.tag').val(), value);
 			});
 		});
 		
@@ -789,7 +795,7 @@
 		}	
 	}
 	
-	function showTasksForProject(projectName) {
+	function showTasksForProject($ui, projectName) {
 		var tasks = window.localStorage.recentTasks || '{}';
 		tasks = JSON.parse(tasks);
 		
@@ -798,7 +804,7 @@
 		if (tasks[projectName])
 			finalSet = tasks[projectName];
 		
-		var $autoTask = $('.auto-task');
+		var $autoTask = $ui;
 		$autoTask.find('option').not('.default').detach();
 		
 		$(finalSet).each(function(i,task) {
@@ -813,9 +819,15 @@
 		$('.whenpad-version').html(WHENPAD_VERSION);
 		$('select.auto-project').change(function() {
 			var $autoTags = $(this);
+			var $container = $autoTags.parents('.taskItem:first');
 			
 			if ($autoTags.find(':selected').filter('.add').length > 0) {
 				var tag = prompt("New project:");
+				
+				if (!tag) {
+					$(this).val('');
+					return;
+				}
 				
 				if ($autoTags.find('option[value=\''+tag.replace(/\\/, "\\\\").replace(/'/, "\\'") +'\']').length == 0) {
 					var $newTag = $('<option>'+tag+'</option>').val(tag);	
@@ -831,20 +843,25 @@
 			var val = $(this).val();
 			//$(this).prevAll('.new-tag:first').html(val);
 			usedTag(val);
-			showTasksForProject(val);
+			showTasksForProject($container.find('select.auto-task'), val);
 			
-			updateAutoTags();
+			//updateAutoTags();
 			//$(this).val('');
 		});
 	
 		$('select.auto-task').change(function() {
 			var $autoTasks = $(this);
+			var $container = $autoTasks.parents('.taskItem:first');
 			
 			if ($autoTasks.find(':selected').filter('.add').length > 0) {
 				var tag = prompt("New task:");
 				
-				alert('used task on project '+$('.auto-project').val()+' with tag '+tag);
-				usedTask($('.auto-project').val(), tag);
+				if (!tag) {
+					$(this).val('');
+					return;
+				}
+				
+				usedTask($container.find('.auto-project').val(), tag);
 				
 				$autoTasks.val(tag);
 				if ($autoTasks.find('option[value=\''+tag.replace(/\\/, "\\\\").replace(/'/, "\\'") +'\']').length == 0) {
@@ -867,6 +884,38 @@
 			showPrimaryTab($('#tabs > .now.tab'), $(this));
 		});
 			
+		$app.find('button.split').click(function() {
+			var splitNote = $('.split-note').val();
+			var splitTime = $('.split-time').val();
+			var splitMode = $('.split-mode').val();
+			var splitProject = $('.split-entry-project').val();
+			var splitTask = $('.split-entry-task').val();
+			
+			var time = intervalToSeconds(splitTime);
+			var total = timerElapsed();
+			
+			var st, et;
+			
+			if (splitMode == 'first') {
+				st = startTime;
+				et = new Date(startTime.getTime() + time);
+			} else {
+				st = new Date(startTime.getTime() + (total - time));
+				et = new Date();
+			}
+			
+			addTimeEntry({
+				note: splitNote,
+				time: time,
+				tag: splitProject,
+				task: splitTask,
+				startTime: startTime.getTime(),
+				endTime: (new Date()).getTime(),
+				id: Math.floor(Math.random()*10000000)
+			});
+			
+			timeBuffer -= time;
+		});
 		
 		$app.find('button.finish').click(function() {
 			if ($('textarea.note').val() == '') {
@@ -878,14 +927,16 @@
 			stopTimer();
 			var $note = $('textarea.note');
 			var note = $note.val();
-			var tag = $('select.auto-project').val();
-		
+			var tag = $('select.new-entry-project').val();
+			var task = $('select.new-entry-task').val();
+			
 			usedTag(tag);
 	
 			addTimeEntry({
 				note: note,
 				time: time,
 				tag: tag,
+				task: task,
 				startTime: startTime.getTime(),
 				endTime: (new Date()).getTime(),
 				id: Math.floor(Math.random()*10000000)
@@ -900,10 +951,12 @@
 			var value = $addTime.val().replace(/^ | $/g, '');
 			var negation = 1;
 
-			if (value[0] == '-')
+			if (value[0] == '-') {
 				negation = -1;
+				value = value.subtr(1);
+			}
 
-			var modifier = intervalToSeconds($addTime.val());
+			var modifier = intervalToSeconds(value);
 			timeBuffer += modifier * negation;
 
 			$addTime.val('00:00:00');
