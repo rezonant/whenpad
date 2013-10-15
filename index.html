@@ -179,18 +179,16 @@
 			<button class="big close">Close</button>
 		</div>
 		<div class="time-entry">
+			<span class="display-time-spent">00:00</span>
 			<div style="position:absolute;right:0.6em;top:0.6em;">
 				<a href="javascript:;" class="select special" style="position:relative;top:-2px;">&#9634;</a>
 				<a href="javascript:;" class="remove special">&#9447;</a>
 			</div>
 			
 			<div class="info">
-				<span class="display-time-spent">00:00</span>
-				
 				<br/>
-				<label class="columnar">Start time:</label> <span class="display-start-time">Fri Jan 12 3:46 PM</span><br/>
-				<label class="columnar">End time:</label> <span class="display-end-time">Fri Jan 12 3:50 PM</span><br/>
-				<label class="columnar">Tag:</label> <span class="display-tag"></span>
+				<label class="short columnar">Start:</label> <span class="display-start-time">Fri Jan 12 3:46 PM</span><br/>
+				<label class="short columnar">Saved:</label> <span class="display-end-time">Fri Jan 12 3:50 PM</span><br/>
 			</div>
 			
 			<div>
@@ -198,7 +196,8 @@
 					<em>No note to display</em>
 				</div>
 			</div>
-			
+			<br/>
+			<label class="short columnar">Tag:</label> <span class="display-tag"></span>
 			<input type="hidden" class="tag" name="tag[]" />
 			<input type="hidden" class="time" name="time[]" />
 			<input type="hidden" class="note" name="note[]" />

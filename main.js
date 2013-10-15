@@ -195,6 +195,13 @@
 		return date.toLocaleDateString()+' '+date.toLocaleTimeString();
 	}
 	
+	function secondsToTime(seconds)
+	{
+		var date = new Date(parseInt(seconds));
+		
+		return date.toLocaleTimeString();
+	}
+	
 	function intervalToSeconds(dt)
 	{
 		parts = dt.split(':');
@@ -228,8 +235,8 @@
 		
 		$entry.find('.display-note').html(entry.note.replace(/\n/g, "<br/>\n"));
 		$entry.find('.display-time-spent').html(secondsToInterval(entry.time));
-		$entry.find('.display-start-time').html(secondsToDateTime(entry.startTime));
-		$entry.find('.display-end-time').html(secondsToDateTime(entry.endTime));
+		$entry.find('.display-start-time').html(secondsToTime(entry.startTime));
+		$entry.find('.display-end-time').html(secondsToTime(entry.endTime));
 		$entry.find('.display-tag').html(entry.tag);
 	
 		$entry.find('.display-note').click(function() {

@@ -147,23 +147,27 @@ div.overlay {
 }
 
 label {
-		font-weight: bold;
+	font-weight: bold;
 }
 
 label.columnar {
-		display:inline-block;
-		min-width: 7em;
+	display:inline-block;
+	min-width: 7em;
+}
+
+label.short.columnar {
+	min-width: 5em;
 }
 
 .display-note {
 }
 
 .lightbox {
-		background: white;
-		color: black;
-		border-radius: 10px;
-		display: inline-block;
-		padding:0.5em 1.5em 1em 1.5em;
+	background: white;
+	color: black;
+	border-radius: 10px;
+	display: inline-block;
+	padding:0.5em 1.5em 1em 1.5em;
 }
 
 .time-entry.selected {
