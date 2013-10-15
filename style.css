@@ -93,7 +93,7 @@ div#clock.warning {
 }
 
 div.main-panel {
-	float:right;
+	float:left;
 }
 
 div.main-panel button, button.big {
@@ -213,7 +213,7 @@ a img {
 }
 
 .notebox {
-	margin-right:18em;
+	margin-left:18em;
 }
 
 .nonsidebar {
