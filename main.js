@@ -612,7 +612,6 @@
 			var currentDateKey = $tab.data('date');
 			
 			var stats = produceStats(entries.filter(function(item) {
-				alert(currentDateKey+' == '+ (new Date(parseInt(item.startTime)).getDateStamp()));
 				return (currentDateKey == new Date(parseInt(item.startTime)).getDateStamp());
 			}));
 			
