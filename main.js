@@ -112,7 +112,7 @@
 		$('#clock .hour').html(zeroPad(hms.hours, 2));
 		$('#clock .minute').html(zeroPad(hms.minutes, 2));
 		$('#clock .second').html(zeroPad(hms.seconds, 2));
-		$('.total-time-plus').html(secondsToInterval(seconds + $('.main-panel .total-time').data('value')));
+		$('#tabs .now.tab .total-time-plus').html(secondsToInterval(seconds + $('.main-panel .total-time').data('value')));
 	}
 	
 	function pauseTimer()
@@ -375,6 +375,7 @@
 		$dateTab.addClass('tab');
 		$dateTab.addClass('date-'+dateKey);
 		$dateTab.data('hash', 'date-'+dateKey);
+		$dateTab.data('date', dateKey);
 
 		//////// Behaviors and Event Handlers ////////////
 	
@@ -521,15 +522,20 @@
 		return $dateTab;
 	}
 	
-	function updateStats()
+	function produceStats(entries, selector)
 	{
-		var entries = serializeTimeEntries($('.time-entries'));
 		var total = 0;
 		var groups = {};
 		var names = [];
+		var count = 0;
 		
 		$(entries).each(function(i,e) {
+			if (selector && !selector(e))
+				return;
+			
 			total += parseInt(e.time);
+			count += 1;
+			
 			if (e.tag) {
 				if (!groups[e.tag])
 					groups[e.tag] = 0;
@@ -545,16 +551,26 @@
 			return a > b ? 1 : 0;
 		});
 		
+		return {
+			total: total,
+			count: count,
+			groupTotals: groups,
+			groups: names
+		}
+	}
+	
+	function populateStatsUI($stats, stats)
+	{
 		var $html = $([]);
 		var $slides = $([]);
 		
-		$('.stats > div').addClass('removed');
+		$stats.find('> div').not('.ignore').addClass('removed');
 		
-		for (var i in names) {
-			var key = names[i];
-			var groupName = key, groupTime = secondsToInterval(groups[key]);
+		for (var i in stats.groups) {
+			var key = stats.groups[i];
+			var groupName = key, groupTime = secondsToInterval(stats.groupTotals[key]);
 			var safeGroupName = groupName.replace(/\\/g, "\\\\").replace(/\'/g, "\\'");
-			var $oldGroupStat = $('.stats').find('[data-group=\''+safeGroupName+'\']');
+			var $oldGroupStat = $stats.find('[data-group=\''+safeGroupName+'\']');
 			var $groupStat = $('<div><label class="columnar">'+groupName+': </label>'+groupTime+'</div>');
 			
 			$groupStat.attr('data-group', groupName);
@@ -565,22 +581,43 @@
 			//if ($oldGroupStat.length > 0)
 			//	$oldGroupStat.after($groupStat);
 			//else
-				$('.stats').append($groupStat);
+				$stats.append($groupStat);
 			
 			$oldGroupStat.remove();
-		}
+		}	
 		
-		$('.stats > div.removed').slideUp(400, function() {
+		$stats.find('> div.removed').slideUp(400, function() {
 			$(this).detach();
 		});
 		
-		$('.stats').find('[data-is-new=1]')
+		$stats.find('[data-is-new=1]')
 			.attr('data-is-new', '')
 			.hide().slideDown();
 		
-		$('.total-time').data('value', total).html(secondsToInterval(total));
-		$('.total-time-plus').html(secondsToInterval(timerElapsed() + $('.main-panel .total-time').data('value')));
-
+		$stats.find('.total-time').data('value', stats.total).html(secondsToInterval(stats.total));
+		//$stats.find('.total-time-plus').html(secondsToInterval(timerElapsed() + $('.main-panel .total-time').data('value')));
+	}
+	
+	function updateStats()
+	{
+		var entries = serializeTimeEntries();
+		var $stats = $('#tabs .now.tab .stats');
+		var stats = produceStats(entries);
+		
+		populateStatsUI($stats, stats);
+		
+		$('#tabs > .days .tab').each(function() {
+			var $tab = $(this);
+			var $stats = $tab.find('.stats');
+			var currentDateKey = $tab.data('date');
+			
+			var stats = produceStats(entries.filter(function(item) {
+				alert(currentDateKey+' == '+ (new Date(parseInt(item.startTime)).getDateStamp()));
+				return (currentDateKey == new Date(parseInt(item.startTime)).getDateStamp());
+			}));
+			
+			populateStatsUI($stats, stats);
+		});
 	}
 	
 	function showPrimaryTab($tab, $tabButton, navigate) {
@@ -603,6 +640,10 @@
 	
 	function serializeTimeEntries($timeEntries)
 	{
+		if (typeof $timeEntries === 'undefined') {
+			$timeEntries = $('.time-entries').not('.mirror');
+		}
+		
 		var entries = [];
 		
 		$timeEntries.find('.time-entry').each(function() {
