@@ -32,11 +32,51 @@
 		}
 	}
 	
+	function usedTask(project, task)
+	{
+		task = task.replace(/^ | $/g, '');
+			
+		var autos = window.localStorage.recentTasks || '{}';
+		autos = JSON.parse(autos);
+
+		var newAutos = {};
+		var limit = 10;
+
+		newAutos[project] = [];
+		newAutos[project].push(task);
+		
+		$(autos).each(function(projectName,taskList) {
+			
+			var started = false;
+			
+			$(taskList).each(function(i,e) {
+				if (projectName == project && e == task)
+					return;
+				
+				if (typeof e != 'string')
+					return;
+				
+				if (!started) {
+					newAutos[projectName] = [];
+					started = true;
+				}
+				
+				newAutos[projectName].push(e);
+				
+				if (i >= limit)
+					return false;
+			});
+			
+		});
+		
+		window.localStorage.recentTasks = JSON.stringify(newAutos);
+	}
+
 	function usedTag(tag)
 	{
 		tag = tag.replace(/^ | $/g, '');
 			
-		var autos = window.localStorage.recentTags || '[]';
+		var autos = window.localStorage.recentProjects || '[]';
 		autos = JSON.parse(autos);
 
 		var newAutos = [tag];
@@ -50,15 +90,16 @@
 				return false;
 		});
 
-		window.localStorage.recentTags = JSON.stringify(newAutos);
+		window.localStorage.recentProjects = JSON.stringify(newAutos);
 		updateAutoTags();
 	}
 	
 	function updateAutoTags()
 	{
-		var autos = window.localStorage.recentTags || '[]';
+		var autos = window.localStorage.recentProjects || '[]';
 		autos = JSON.parse(autos);
-		var $autoTags = $('select.auto-tag');
+		var $autoTags = $('select.auto-project');
+		var currentTag = $autoTags.val();
 		
 		$autoTags.find('option').not('.default').detach();
 
@@ -74,11 +115,10 @@
 		});
 		
 		$autoTags.append('<option class="add">add...</option>');
-		
-		var currentTag = $('.new-tag').text();
+		//var currentTag = $('.new-tag').text();
 		$autoTags.val(currentTag);
 	}
-
+	
 	function formatTimeSegment(value)
 	{
 			if (value < 10)
@@ -225,11 +265,15 @@
 		
 		var $entry = $('#templates .time-entry').clone();
 		
+		if (!entry.task)
+			entry.task = 'none';
+		
 		$entry.attr('data-id', entry.id);
 		
 		$entry.find('input.note').val(entry.note);
 		$entry.find('input.time').val(entry.time);
 		$entry.find('input.tag').val(entry.tag);
+		$entry.find('input.task').val(entry.task);
 		$entry.find('input.startTime').val(entry.startTime);
 		$entry.find('input.endTime').val(entry.endTime);
 		
@@ -238,6 +282,7 @@
 		$entry.find('.display-start-time').html(secondsToTime(entry.startTime));
 		$entry.find('.display-end-time').html(secondsToTime(entry.endTime));
 		$entry.find('.display-tag').html(entry.tag);
+		$entry.find('.display-task').html(entry.task);
 	
 		$entry.find('.display-note').click(function() {
 			var $displayNote = $(this);
@@ -306,10 +351,35 @@
 				$(this).after($display).detach();
 				
 				if (value != initialValue) {
-					window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries($('.time-entries')));
+					window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries());
 				}
 				updateStats();
 				usedTag(value);
+			});
+		});
+		$entry.find('.display-task').click(function() {
+			var $display = $(this);
+			var $html = $('<div style="height:1em;display:inline-block;"><input type="text" style="font-size:100%;margin-top:-1em;width:8em;text-align:center;padding:-0.2em 0.2em;" /></div>');
+			var $textarea = $html.find('input');
+			
+			var initialValue = $entry.find('input.task').val();
+			$textarea.val(initialValue);
+			
+			$display.after($html).detach();
+			
+			$textarea.focus();
+			
+			$textarea.blur(function() {
+				var value = $(this).val();
+				$display.html(value);
+				$entry.find('input.task').val(value);
+				$(this).after($display).detach();
+				
+				if (value != initialValue) {
+					window.localStorage.timeEntries = JSON.stringify(serializeTimeEntries());
+				}
+				updateStats();
+				usedTask($entry.find('input.tag').val(), value);
 			});
 		});
 		
@@ -531,39 +601,56 @@
 	
 	function produceStats(entries, selector)
 	{
-		var total = 0;
-		var groups = {};
-		var names = [];
-		var count = 0;
+		var stats = {
+			total: 0,
+			count: 0,
+			groupTotals: [],
+			groups: [],
+			taskSets: {},
+		};
 		
 		$(entries).each(function(i,e) {
 			if (selector && !selector(e))
 				return;
 			
-			total += parseInt(e.time);
-			count += 1;
+			stats.total += parseInt(e.time);
+			stats.count += 1;
 			
 			if (e.tag) {
-				if (!groups[e.tag])
-					groups[e.tag] = 0;
-				groups[e.tag] += parseInt(e.time);
-				names.push(e.tag);
+				if (!stats.groupTotals[e.tag])
+					stats.groupTotals[e.tag] = 0;
+				stats.groupTotals[e.tag] += parseInt(e.time);
+				stats.groups.push(e.tag);
+				
+				// Add task specific time.
+				
+				if (e.task) {
+					if (!stats.taskSets[e.tag])
+						stats.taskSets[e.tag] = {};
+					
+					console.log('adding task specific time to');
+					console.log(stats.taskSets[e.tag]);
+					
+					if (!stats.taskSets[e.tag][e.task])
+						stats.taskSets[e.tag][e.task] = 0;
+					
+					stats.taskSets[e.tag][e.task] += parseInt(e.time);
+					console.log(stats.taskSets[e.tag]);
+				}
 			}
 		});
 		
-		names.sort(function(a, b) {
+		console.log('afte rall:');
+		console.log(stats);
+		
+		stats.groups.sort(function(a, b) {
 			if (a == b)
 				return 0;
 			
 			return a > b ? 1 : 0;
 		});
 		
-		return {
-			total: total,
-			count: count,
-			groupTotals: groups,
-			groups: names
-		}
+		return stats;
 	}
 	
 	function populateStatsUI($stats, stats)
@@ -572,13 +659,37 @@
 		var $slides = $([]);
 		
 		$stats.find('> div').not('.ignore').addClass('removed');
-		
+		console.log(stats);
+			
 		for (var i in stats.groups) {
 			var key = stats.groups[i];
 			var groupName = key, groupTime = secondsToInterval(stats.groupTotals[key]);
 			var safeGroupName = groupName.replace(/\\/g, "\\\\").replace(/\'/g, "\\'");
 			var $oldGroupStat = $stats.find('[data-group=\''+safeGroupName+'\']');
 			var $groupStat = $('<div><label class="columnar">'+groupName+': </label>'+groupTime+'</div>');
+			var tasks = stats.taskSets[key];
+			
+			console.log('whoorm');
+			console.log(tasks);
+			
+			var $set = $('<div></div>').css('margin-left', '2em');
+			var used = false;
+			
+			for (var task in tasks) {
+				used = true;
+				
+				var value = tasks[task];
+				
+				if (task == 'none')
+					task = 'no task listed';
+				
+				$set.append('<div style="opacity:0.7;"><label class="columnar">'+secondsToInterval(value)+'</label>'+task+'</div>');
+			}
+			
+			if (used) {
+				$set.append('<br/>');
+				$groupStat.append($set);
+			}
 			
 			$groupStat.attr('data-group', groupName);
 			
@@ -659,7 +770,8 @@
 				startTime: $(this).find('input.startTime').val(),
 				endTime: $(this).find('input.endTime').val(),
 				id: $(this).attr('data-id'),
-				tag: $(this).find('input.tag').val()
+				tag: $(this).find('input.tag').val(),
+				task: $(this).find('input.task').val()
 			});
 		});
 		
@@ -677,14 +789,33 @@
 		}	
 	}
 	
+	function showTasksForProject(projectName) {
+		var tasks = window.localStorage.recentTasks || '{}';
+		tasks = JSON.parse(tasks);
+		
+		var finalSet = [];
+		
+		if (tasks[projectName])
+			finalSet = tasks[projectName];
+		
+		var $autoTask = $('.auto-task');
+		$autoTask.find('option').not('.default').detach();
+		
+		$(finalSet).each(function(i,task) {
+			$autoTask.append($('<option></option>').html(task).attr('value', task));
+		});
+		
+		$autoTask.append('<option class="add">add ...</option>');
+	}
+	
 	function installAppBehaviors() {
 	
 		$('.whenpad-version').html(WHENPAD_VERSION);
-		$('select.auto-tag').change(function() {
+		$('select.auto-project').change(function() {
 			var $autoTags = $(this);
 			
 			if ($autoTags.find(':selected').filter('.add').length > 0) {
-				var tag = prompt("New tag:");
+				var tag = prompt("New project:");
 				
 				if ($autoTags.find('option[value=\''+tag.replace(/\\/, "\\\\").replace(/'/, "\\'") +'\']').length == 0) {
 					var $newTag = $('<option>'+tag+'</option>').val(tag);	
@@ -698,12 +829,36 @@
 			}
 			
 			var val = $(this).val();
-			$(this).prevAll('.new-tag:first').html(val);
+			//$(this).prevAll('.new-tag:first').html(val);
 			usedTag(val);
+			showTasksForProject(val);
+			
 			updateAutoTags();
 			//$(this).val('');
 		});
 	
+		$('select.auto-task').change(function() {
+			var $autoTasks = $(this);
+			
+			if ($autoTasks.find(':selected').filter('.add').length > 0) {
+				var tag = prompt("New task:");
+				
+				alert('used task on project '+$('.auto-project').val()+' with tag '+tag);
+				usedTask($('.auto-project').val(), tag);
+				
+				$autoTasks.val(tag);
+				if ($autoTasks.find('option[value=\''+tag.replace(/\\/, "\\\\").replace(/'/, "\\'") +'\']').length == 0) {
+					var $newTag = $('<option>'+tag+'</option>').val(tag);	
+					
+					$autoTasks.find('option.add').before($newTag);
+					$newTag.prop('selected', true);
+					//$autoTags.change();
+				}
+				
+				//return;
+			}
+		});
+		
 		$app.find('#logo').click(function() {
 			showPrimaryTab($('#tabs > .about.tab'), $(this));
 		});
@@ -723,7 +878,7 @@
 			stopTimer();
 			var $note = $('textarea.note');
 			var note = $note.val();
-			var tag = $('span.new-tag').text();
+			var tag = $('select.auto-project').val();
 		
 			usedTag(tag);
 	
