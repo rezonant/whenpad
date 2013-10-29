@@ -913,7 +913,9 @@
 				endTime: (new Date()).getTime(),
 				id: Math.floor(Math.random()*10000000)
 			});
-			
+		
+			$('.split-note').val('');
+			$('.split-time').val('00:00:00');
 			timeBuffer -= time;
 		});
 		
