@@ -96,6 +96,11 @@ div.main-panel {
 	float:left;
 }
 
+	
+div.main-panel .run {
+	margin-left:20em;
+}
+
 div.main-panel button, button.big {
 		vertical-align:middle;
 		margin-left:1em;
