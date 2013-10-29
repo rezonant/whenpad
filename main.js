@@ -418,7 +418,7 @@
 		var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 		var day = new Date(parseInt(entry.startTime));
 		var dateKey = day.getDateStamp();
-		var dayLabel = daysOfWeek[day.getDay()] + ' ' + months[day.getMonth()] + ' ' + day.getDate();
+		var dayLabel = daysOfWeek[day.getDay() - 1] + ' ' + months[day.getMonth()] + ' ' + day.getDate();
 		
 		if (dateKey == (new Date()).getDateStamp())
 			dayLabel = 'Today';
@@ -955,10 +955,11 @@
 
 			if (value[0] == '-') {
 				negation = -1;
-				value = value.subtr(1);
+				value = value.substring(1);
 			}
 
 			var modifier = intervalToSeconds(value);
+			alert(modifier*negation);
 			timeBuffer += modifier * negation;
 
 			$addTime.val('00:00:00');
