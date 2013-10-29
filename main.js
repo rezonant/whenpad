@@ -414,11 +414,11 @@
 
 		});
 		
-		var daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+		var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 		var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 		var day = new Date(parseInt(entry.startTime));
 		var dateKey = day.getDateStamp();
-		var dayLabel = daysOfWeek[day.getDay() - 1] + ' ' + months[day.getMonth()] + ' ' + day.getDate();
+		var dayLabel = daysOfWeek[day.getDay()] + ' ' + months[day.getMonth()] + ' ' + day.getDate();
 		
 		if (dateKey == (new Date()).getDateStamp())
 			dayLabel = 'Today';
