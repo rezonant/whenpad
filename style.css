@@ -243,6 +243,10 @@ a img {
 		float:none;
 	}
 	
+	div.main-panel .run {
+		margin-left:0;
+	}
+	
 	.sidebar {
 		display: none;
 	}
