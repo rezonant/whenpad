@@ -778,7 +778,9 @@
 			}));
 			
 			populateStatsUI($('#tabs .now.tab .today.stats'), stats);
-			populateStatsUI($stats, stats);
+
+			if (currentDateKey == (new Date()).getDateStamp())
+				populateStatsUI($stats, stats);
 		});
 	}
 	
