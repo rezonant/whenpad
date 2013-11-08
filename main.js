@@ -5,7 +5,7 @@
  */
 
 !function() {
-	var WHENPAD_VERSION = "0.1";
+	var WHENPAD_VERSION = "0.2";
 	
 	var $app = null;
 	var timeBuffer = 0;
