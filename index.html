@@ -16,26 +16,24 @@
 
 	
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-        <link rel="stylesheet" href="css/main.css">
 	<link href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css' />
 
 	<link rel="icon" type="image/png" href="img/icon24.png" />
-		
+<!--	
 	<link rel="shortcut icon"		sizes="128x128"	href="img/icon128.png" />
 	<link rel="apple-touch-icon"	sizes="128x128"	href="img/icon128.png" />
-		
+-->		
 	<link rel="shortcut icon"		sizes="196x196"	href="img/icon196.png" />
 	<link rel="apple-touch-icon"	sizes="196x196"	href="img/icon196.png" />
-		
+<!--		
 	<link rel="shortcut icon"		sizes="256x256"	href="img/icon256.png" />
 	<link rel="apple-touch-icon"	sizes="256x256"	href="img/icon256.png" />
 		
-	<!-- non standard sizes (TODO) -->
 	<link rel="apple-touch-icon"					href="img/icon64.png" />
 	<link rel="apple-touch-icon"	sizes="72x72"	href="img/icon72.png" />
 	<link rel="apple-touch-icon"	sizes="114x114" href="img/icon114.png" />
 	<link rel="apple-touch-icon"	sizes="144x144" href="img/icon144.png" />
-
+-->
 </head>
 <body>
 	<!--[if lt IE 7]>
@@ -43,8 +41,8 @@
 	<![endif]-->
 	<div id="app">
 		<div id="logo">
-			<img src="img/icon48.png" />
-			<img src="img/logo50.png" />
+			<img class="icon" src="img/icon128.png" />
+			<img class="logo" src="img/logo50.png" />
 		</div>
 		
 		<div id="tabs">
@@ -100,25 +98,45 @@
 			<fieldset class="now tab" data-hash="now">
 				<div class="main-panel">
 					
-					<div class="inactive" id="clock">
-						<span class="hour">00</span> : <span class="minute">00</span> : <span class="second">00</span> 
-					</div>
+					<div class="main-controls">
+						<div class="inactive" id="clock">
+							<span class="hour">00</span> : <span class="minute">00</span> : <span class="second">00</span> 
+						</div>
 					
-					<button class="short start" title="Start or resume the timer">Start</button>
-					<button class="short finish" disabled="disabled" title="Save the current time entry">Save</button>
+						<button class="short start" title="Start or resume the timer">Start</button>
+						<button class="short finish" disabled="disabled" title="Save the current time entry">Save</button>
 					
-					<br/>
+						<hr style="margin: -2px 0 5px 0" />
 					
-					<div style="text-align:left;">
-						Adjust: <input type="text" class="add-time" value="00:00:00" style="width:5.1em;" />
-						<button class="modify short">Go</button>
+						<div style="text-align:left;">
+							Adjust: <input type="number" class="add-time" value="0" style="width:2.0em;padding:0 0.4em;font-size:100%;" min="-120" max="120" />
+							<select class="add-time-unit" title="Units">
+								<option value="seconds">sec</option>
+								<option value="hours">hr</option>
+								<option value="minutes">min</option>
+							</select>
+							<button class="modify short">Go</button>
+							<button class="stop short minor">Stop (Discard)</button>
+						</div>
 					</div>
 					
 					<br/>
 
-					<fieldset class="sidebar">
+					<div class="sidebar">
+						
+						<label>Today</label><br/>
+						<div class="today stats">
+							<div class="ignore">
+								<label class="columnar">Total: </label><span class="today total-time">00:00:00</span><br/>
+								<label class="columnar" style="text-align:right;">+ new = &nbsp;</label><span class="today total-time-plus">00:00:00</span>
+
+								<br/>
+								<br/>
+							</div>
+						</div>
+	
 						<label>Statistics</label><br/>
-						<div class="stats">
+						<div class="alltime stats">
 							<div class="ignore">
 								<label class="columnar">Total: </label><span class="total-time">00:00:00</span><br/>
 								<label class="columnar" style="text-align:right;">+ new = &nbsp;</label><span class="total-time-plus">00:00:00</span>
@@ -127,13 +145,14 @@
 								<br/>
 							</div>
 						</div>
-					</fieldset>
+					</div>
 				</div>
 				<div class="main-run">
 					<div class="taskItem">
-						<label>&#9660; Note:</label>
-						
-						<div style="display:inline-block;margin-left:4em;">
+						<div style="float:left;">
+							<label>&#9660; Note:</label>
+						</div>
+						<div class="pile-column">
 							Project:
 							<select style="width:6em;position:relative;top:-3px;" class="auto-project new-entry-project">
 								<option class="default" value="">none</option>
@@ -141,7 +160,7 @@
 							</select>
 						</div>
 						
-						<div style="display:inline-block;margin-left:4em;">
+						<div class="pile-column">
 							Task:
 							<span class="new-task" style="display:none;font-weight:bold;font-size:100%;min-width:50em;" contenteditable="true">unlabeled</span>
 							<select style="width:6em;position:relative;top:-3px;" class="auto-task new-entry-task">
@@ -165,9 +184,8 @@
 								<option value="last">Last</option>
 							</select>
 							<input type="text" value="00:00:00" class="split-time" style="width:5em;" />
-						<br/>
-						<label class="short columnar">&nbsp;</label>
-						<div style="display:inline-block;margin-left:4em;">
+						<div class="pile-column">&nbsp;</div>
+						<div class="pile-column">
 							Project:
 							<select style="width:6em;position:relative;top:-3px;" class="auto-project split-entry-project">
 								<option class="default" value="">none</option>
@@ -175,7 +193,7 @@
 							</select>
 						</div>
 						
-						<div style="display:inline-block;margin-left:4em;">
+						<div class="pile-column">
 							Task:
 							<span class="new-task" style="display:none;font-weight:bold;font-size:100%;min-width:50em;" contenteditable="true">unlabeled</span>
 							<select style="width:6em;position:relative;top:-3px;" class="auto-task split-entry-task">
@@ -191,14 +209,24 @@
 						<textarea class="split-note" placeholder="Describe what you were doing."></textarea>
 					</div>
 					
-						<div style="float:right;">
+						<div style="text-align:right;">
 							<button class="split">Split</button>
 						</div>
 				</div>
 				
 				<fieldset class="nonsidebar">
+					<label>Today</label><br/>
+					<div class="today stats">
+						<div class="ignore">
+							<label class="columnar">Total: </label><span class="today-total-time">00:00:00</span><br/>
+							<label class="columnar" style="text-align:right;">+ new = &nbsp;</label><span class="today-total-time-plus">00:00:00</span>
+
+							<br/>
+							<br/>
+						</div>
+					</div>
 					<label>Statistics</label><br/>
-					<div class="stats">
+					<div class="alltime stats">
 						<div class="ignore">
 							<label class="columnar">Total: </label><span class="total-time">00:00:00</span><br/>
 							<label class="columnar" style="text-align:right;">+ new = &nbsp;</label><span class="total-time-plus">00:00:00</span>
@@ -258,7 +286,7 @@
 		<div class="time-entry">
 			<span class="display-time-spent">00:00</span>
 			<div style="position:absolute;right:0.6em;top:0.6em;">
-				<a href="javascript:;" class="select special" style="position:relative;top:-2px;">&#9634;</a>
+				<a href="javascript:;" class="select special" style="position:relative;top:-2px;background:#ddd;border-radius:2px;">&#9634;</a>
 				<a href="javascript:;" class="remove special">&#9447;</a>
 			</div>
 			

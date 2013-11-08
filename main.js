@@ -5,7 +5,7 @@
  */
 
 !function() {
-	var WHENPAD_VERSION = "0.2";
+	var WHENPAD_VERSION = "0.5";
 	
 	var $app = null;
 	var timeBuffer = 0;
@@ -156,7 +156,13 @@
 		$('#clock .hour').html(zeroPad(hms.hours, 2));
 		$('#clock .minute').html(zeroPad(hms.minutes, 2));
 		$('#clock .second').html(zeroPad(hms.seconds, 2));
-		$('#tabs .now.tab .total-time-plus').html(secondsToInterval(seconds + $('.main-panel .total-time').data('value')));
+
+		var totalTime = $('.main-panel .alltime.stats .total-time').data('value') || 0;
+
+		$('#tabs .now.tab .alltime.stats .total-time-plus').html(secondsToInterval(seconds + totalTime));
+
+		var todayTime = $('.main-panel .today.stats .total-time').data('value') || 0;
+		$('#tabs .now.tab .today.stats .total-time-plus').html(secondsToInterval(seconds + todayTime));
 	}
 	
 	function pauseTimer()
@@ -175,15 +181,23 @@
 	{
 		pauseTimer();
 		timeBuffer = 0;
+		if (window.localStorage) {
+			delete window.localStorage.whenpadTimeBuffer;
+			delete window.localStorage.whenpadStartTime;
+		}
 		
 		$('#clock').removeClass('warning');
 		setClockDisplay(0);
 		$('button.start').removeClass('pause').html('Start');
 	}
 	
-	function startTimer()
+	function startTimer(initialTime, initialStartTime)
 	{
-		timeBuffer = 0;
+		if (typeof initialTime == 'undefined')
+			initialTime = 0;
+		timeBuffer = initialTime;
+		startTime = initialStartTime || new Date();
+		window.localStorage.whenpadStartTime = startTime.getTime();
 		resumeTimer();
 		
 		$('.main-panel button.finish').prop('disabled', false);
@@ -191,8 +205,9 @@
 	
 	function resumeTimer()
 	{
-		if (start > 0)
+		if (start > 0) 
 			timeBuffer = timerElapsed();
+
 		start = new Date().getTime();
 		
 		setClockDisplay(timeBuffer);
@@ -202,6 +217,13 @@
 				return;
 			
 			var seconds = Math.floor(((new Date()).getTime() - start)/1000 + timeBuffer);
+
+			// Persist the current time to local storage in case we get reloaded.
+		
+			if (window.localStorage) {
+				window.localStorage.whenpadTimeBuffer = seconds;
+			}
+
 			setClockDisplay(seconds);
 		}, 500);
 		
@@ -351,7 +373,7 @@
 			
 			$textarea.blur(function() {
 				var value = $(this).val();
-				$display.html(value);
+				$display.html(value == '' ? 'unlabeled' : value);
 				$entry.find('input.tag').val(value);	
 				$(this).after($display).detach();
 				
@@ -417,10 +439,20 @@
 		
 		var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 		var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-		var day = new Date(parseInt(entry.startTime));
+		var dateUnix = parseInt(entry.startTime);
+
+		if (isNaN(dateUnix))
+			dateUnix = parseInt(entry.endTime);
+
+		var day = new Date(dateUnix);
 		var dateKey = day.getDateStamp();
 		var dayLabel = daysOfWeek[day.getDay()] + ' ' + months[day.getMonth()] + ' ' + day.getDate();
 		
+		if (isNaN(dateUnix)) {
+			dateKey = 'unknown';
+			dayLabel = 'Unknown Date';
+		}
+
 		if (dateKey == (new Date()).getDateStamp())
 			dayLabel = 'Today';
 		
@@ -662,6 +694,10 @@
 	
 	function populateStatsUI($stats, stats)
 	{
+		if (typeof stats == 'undefined') {
+			debugger;
+		}
+
 		var $html = $([]);
 		var $slides = $([]);
 		
@@ -720,17 +756,18 @@
 			.hide().slideDown();
 		
 		$stats.find('.total-time').data('value', stats.total).html(secondsToInterval(stats.total));
+
 		//$stats.find('.total-time-plus').html(secondsToInterval(timerElapsed() + $('.main-panel .total-time').data('value')));
 	}
 	
 	function updateStats()
 	{
 		var entries = serializeTimeEntries();
-		var $stats = $('#tabs .now.tab .stats');
+		var $stats = $('#tabs .now.tab .alltime.stats');
 		var stats = produceStats(entries);
 		
 		populateStatsUI($stats, stats);
-		
+
 		$('#tabs > .days .tab').each(function() {
 			var $tab = $(this);
 			var $stats = $tab.find('.stats');
@@ -740,6 +777,7 @@
 				return (currentDateKey == new Date(parseInt(item.startTime)).getDateStamp());
 			}));
 			
+			populateStatsUI($('#tabs .now.tab .today.stats'), stats);
 			populateStatsUI($stats, stats);
 		});
 	}
@@ -949,6 +987,10 @@
 			startTimer();
 		});
 
+		$app.find('button.stop').click(function() {
+			stopTimer();
+		});
+
 		$app.find('button.modify').click(function() {
 			var $addTime = $('input.add-time');	
 			var value = $addTime.val().replace(/^ | $/g, '');
@@ -959,10 +1001,24 @@
 				value = value.substring(1);
 			}
 
-			var modifier = intervalToSeconds(value);
+			var unit = $('select.add-time-unit').val();
+			var units = {
+				seconds:	1,
+				minutes:	60,
+				hours:		60*60,
+			}
+			var unitValue = 1;
+			var modifier;
+
+			if (units[unit])
+				unitValue = units[unit];
+
+			modifier = value * unitValue;
+			//modifier = intervalToSeconds(value);
+
 			timeBuffer += modifier * negation;
 
-			$addTime.val('00:00:00');
+//			$addTime.val('0');
 		});
 	
 		$app.find('button.start').click(function() {
@@ -983,7 +1039,6 @@
 				resumeTimer();
 			else {
 				startTimer();
-				startTime = new Date();
 			}
 		});
 	}
@@ -1004,6 +1059,7 @@
 			showPrimaryTab($tab, $button, false);
 		} else {
 			showPrimaryTab($('#tabs > .about.tab'), $('#logo'), false);
+			window.scrollTo(0,0);
 		}
 	}
 	
@@ -1023,6 +1079,19 @@
 		loadTimeEntries();
 		installAppBehaviors();
 		installHash();
+
+		if (window.localStorage && window.localStorage.whenpadTimeBuffer) {
+
+			var initialTime = parseInt(window.localStorage.whenpadTimeBuffer);
+			var initialStartTime = parseInt(window.localStorage.whenpadStartTime);
+
+			if (isNaN(initialStartTime))
+				initialStartTime = undefined;
+			else
+				initialStartTime = new Date(initialStartTime);
+
+			startTimer(initialTime, initialStartTime);
+		}
 	}
 	
 	$(document).ready(function() {

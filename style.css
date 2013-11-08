@@ -23,8 +23,20 @@ div.gradient-bg {
 	min-height: 100%;
 }
 
+hr {
+	margin:0;
+	border:none;
+	height:1px;
+	background:#ccc;
+}
+
 p {
 	font-size: 12pt;
+}
+
+.pile-column {
+	display:inline-block;
+	margin-left:4em;
 }
 
 .aboutSection {
@@ -46,14 +58,9 @@ div.footer a {
 	color: white;
 }
 
-#tabs .buttons button {
+#tabs .buttons button:not(.active) {
 	background:transparent;
 	color:white;
-}
-
-#tabs .buttons button.active {
-	color:black;
-	background:white;
 }
 
 #tabs .buttons button:hover {
@@ -61,7 +68,11 @@ div.footer a {
 	color:black;
 }
 
+#tabs > fieldset {
+	box-shadow: 0px 0px 20px rgba(0,0,0,0.2);
+}
 button, input, select {
+	margin: 3px;
 	background: #ffffff; /* Old browsers */
 	background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(50%,#f1f1f1), color-stop(51%,#e1e1e1), color-stop(100%,#f6f6f6)); /* Chrome,Safari4+ */
@@ -80,17 +91,23 @@ input[type=text] {
 select {
 	border:1px solid #aaa;
 	border-radius:4px;
+	height:2.3em;
+	vertical-align:middle;
 }
 
 button {
 		border-radius:4px;
-		border:none;
+		border:1px solid #ccc;
 		padding:0.6em 0.5em;
-		background: white;
 }
 
 button:hover {
 	background: #eee;
+}
+
+button.minor {
+	font-size:50%;
+	color: #777;
 }
 
 fieldset {
@@ -142,6 +159,12 @@ div#app > fieldset {
 
 div#clock.warning {
 		color: #C91B1B;
+}
+
+div.main-controls {
+	background:#eee;
+	padding:0.5em;
+	border-radius:4px;
 }
 
 div.main-panel {
@@ -286,6 +309,10 @@ a img {
 	color: white;
 }
 
+#logo .icon {
+	height:48px;
+}
+
 @media (max-width:799px) {
 	body {
 		font-size: 13pt;
@@ -313,18 +340,58 @@ a img {
 }
 
 @media (max-width:500px) {
+
+	h2, h3, h4 {
+		margin: 0.25em 0 0.35em 0;
+	}
+
+	#logo .logo {
+		height:32px;
+		display:none;
+	}
+
+	#logo {
+		z-index:-1;
+	}
+
+	#tabs {
+		z-index:0;
+		position:relative;
+	}
+
+	#logo .icon {
+		position:absolute;
+		top:-32px;
+		right:0;
+		height:128px;
+		opacity: 0.5;
+	}
+
 	a.special {
 		font-size: 125%;
 		margin-left:0.5em;
 	}
-	
-	body {
-		font-size: 11pt;
+
+	.pile-column {
+		margin-left:0.5em;
+		font-size:80%;
 	}
 	
-	#logo {
-		float:none;
-		text-align:right;
+	div.main-panel button, button.big {
+		height: 2em;
+		padding: 0.5em 0.6em;
+	}
+
+	button.minor {
+		font-size: 80%;
+	}
+	
+	div.main-controls {
+		border: 1px solid #cccccc;
+	}
+
+	body {
+		font-size: 11pt;
 	}
 	
 	div.main-panel button.short {
