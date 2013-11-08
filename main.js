@@ -285,7 +285,8 @@
 		$entry.find('.display-time-spent').html(secondsToInterval(entry.time));
 		$entry.find('.display-start-time').html(secondsToTime(entry.startTime));
 		$entry.find('.display-end-time').html(secondsToTime(entry.endTime));
-		$entry.find('.display-tag').html(entry.tag);
+		$entry.find('.display-tag').html(entry.tag == '' ? 'unlabeled' : entry.tag);
+
 		$entry.find('.display-task').html(entry.task);
 	
 		$entry.find('.display-note').click(function() {
@@ -959,7 +960,6 @@
 			}
 
 			var modifier = intervalToSeconds(value);
-			alert(modifier*negation);
 			timeBuffer += modifier * negation;
 
 			$addTime.val('00:00:00');
